@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Note;
 use Illuminate\Http\Request;
 
 class NoteController extends Controller
@@ -11,7 +12,8 @@ class NoteController extends Controller
      */
     public function index()
     {
-        //
+        $notes = Note::all();
+        return response()->json($notes);
     }
 
     /**
@@ -19,7 +21,15 @@ class NoteController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'title' => 'required|string',
+            'author' => 'required|string',
+            'body' => 'required|string',
+            'classification' => 'required|string',
+        ]);
+
+        $note = Note::create($request->all());
+        return response()->json($note, 201);
     }
 
     /**
@@ -27,7 +37,11 @@ class NoteController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $note = Note::find($id);
+        if (!$note){
+            return response()->json(['message' => 'Note not found'], 404);
+        }
+        return response()->json($note);
     }
 
     /**
@@ -35,7 +49,20 @@ class NoteController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $note = Note::find($id);
+        if (!$note) {
+            return response()->json(['message' => 'Note not found'], 404);
+        }
+
+        $request->validate([
+            'title' => 'sometimes|required|string',
+            'author' => 'sometimes|required|string',
+            'body' => 'sometimes|required|string',
+            'classification' => 'sometimes|required|string',
+        ]);
+
+        $note->update($request->all());
+        return response()->json($note);
     }
 
     /**
@@ -43,6 +70,11 @@ class NoteController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $note = Note::find($id);
+        if(!$note){
+            return response()->json(['message' => 'Note not found'], 404);
+        }
+        $note->delete();
+        return response()->json(['message' => 'Note deleted']);
     }
 }
